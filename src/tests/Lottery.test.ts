@@ -12,6 +12,8 @@ const { Lottery, LotteryFactory } = compileResult;
 const { evm, abi } = LotteryFactory;
 const { bytecode } = evm;
 
+const sampleImageUrl = "https://i.picsum.photos/id/637/200/300.jpg";
+
 const data = {
   accounts: [] as string[],
   manager: "",
@@ -33,7 +35,7 @@ describe("Lottery", () => {
   });
   it("create a new lottery", async () => {
     const { lotteryFactory, manager } = data;
-    await lotteryFactory.methods.createLottery("Hello", 100).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery("Hello", sampleImageUrl, 100).send({ from: manager, gas });
     const res = await lotteryFactory.methods.getLotteries().call({ from: manager });
     assert.ok(res.length === 1);
   });
@@ -42,7 +44,7 @@ describe("Lottery", () => {
     const { lotteryFactory, accounts, manager } = data;
     const title = "Hello";
     const unitPrice = 1;
-    await lotteryFactory.methods.createLottery(title, unitPrice).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
     const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
     const lotteryAddress = lotteryAddresses[0];
     const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);
@@ -68,7 +70,7 @@ describe("Lottery", () => {
     const unitPrice = 1;
     const donationAccount1 = accounts[1];
     const donationAccount2 = accounts[2];
-    await lotteryFactory.methods.createLottery(title, unitPrice).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
     const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
     const lotteryAddress = lotteryAddresses[0];
     const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);
@@ -91,7 +93,7 @@ describe("Lottery", () => {
     const title = "Hello";
     const unitPrice = 1;
 
-    await lotteryFactory.methods.createLottery(title, unitPrice).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
     const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
     const lotteryAddress = lotteryAddresses[0];
     const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);
@@ -110,7 +112,7 @@ describe("Lottery", () => {
     const title = "Hello";
     const unitPrice = 1;
     const buyerAccount = accounts[3];
-    await lotteryFactory.methods.createLottery(title, unitPrice).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
     const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
     const lotteryAddress = lotteryAddresses[0];
     const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);
@@ -127,7 +129,7 @@ describe("Lottery", () => {
     const title = "Hello";
     const unitPrice = 1;
     const buyerAccount = accounts[3];
-    await lotteryFactory.methods.createLottery(title, unitPrice).send({ from: manager, gas });
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
     const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
     const lotteryAddress = lotteryAddresses[0];
     const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);

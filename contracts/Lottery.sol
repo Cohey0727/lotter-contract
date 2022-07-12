@@ -4,8 +4,12 @@ pragma solidity ^0.8.15;
 contract LotteryFactory {
   address[] public lotteries;
 
-  function createLottery(string memory title, uint256 unitPrice) public {
-    Lottery newLottery = new Lottery(msg.sender, title, unitPrice);
+  function createLottery(
+    string memory title,
+    string memory imageUrl,
+    uint256 unitPrice
+  ) public {
+    Lottery newLottery = new Lottery(msg.sender, title, imageUrl, unitPrice);
     lotteries.push(address(newLottery));
   }
 
@@ -24,6 +28,7 @@ contract Lottery {
   address public factory;
   address public manager;
   string public title;
+  string public imageUrl;
   uint256 public unitPrice;
   LotteryStatus public status;
   mapping(address => uint256) public donationRates;
@@ -38,11 +43,13 @@ contract Lottery {
   constructor(
     address creator,
     string memory _title,
+    string memory _imageUrl,
     uint256 _unitPrice
   ) {
     factory = msg.sender;
     manager = creator;
     title = _title;
+    imageUrl = _imageUrl;
     unitPrice = _unitPrice;
   }
 

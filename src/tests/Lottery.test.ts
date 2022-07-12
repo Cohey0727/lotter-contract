@@ -12,7 +12,7 @@ const { Lottery, LotteryFactory } = compileResult;
 const { evm, abi } = LotteryFactory;
 const { bytecode } = evm;
 
-const sampleImageUrl = "https://i.picsum.photos/id/637/200/300.jpg";
+const sampleImageUrl = "https://www.takarakuji-official.jp/assets/img/common/pic-og-image001.png";
 
 const data = {
   accounts: [] as string[],

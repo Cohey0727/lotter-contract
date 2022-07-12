@@ -66,6 +66,10 @@ contract Lottery {
     require(status == LotteryStatus.Initial);
     _;
   }
+  modifier onlyFinished() {
+    require(status == LotteryStatus.Finished);
+    _;
+  }
 
   function getDonationRates() public view returns (address[] memory, uint256[] memory) {
     uint256[] memory rates = new uint256[](donationAddresses.length);
@@ -127,5 +131,29 @@ contract Lottery {
     uint256 ticketId = tickets.length + 1;
     tickets.push(msg.sender);
     ticketsByAddress[msg.sender].push(ticketId);
+  }
+
+  function distributePrizes() public onlyFinished onlyManager {
+    uint256 totalDonations = 0;
+    for (uint256 index = 0; index < donationAddresses.length; index++) {
+      totalDonations += donationRates[donationAddresses[index]];
+    }
+    uint256 totalPrizes = 0;
+    for (uint256 index = 0; index < winnerPrizes.length; index++) {
+      totalPrizes += winnerPrizeRates[winnerPrizes[index]];
+    }
+    uint256 totalPrize = totalDonations * totalPrizes;
+    uint256 prizePerTicket = totalPrize / tickets.length;
+    for (uint256 index = 0; index < tickets.length; index++) {
+      uint256 ticketId = ticketsByAddress[tickets[index]].length + 1;
+      ticketsByAddress[tickets[index]].push(ticketId);
+      uint256 prize = prizePerTicket;
+      for (uint256 innerIndex = 0; innerIndex < winnerPrizes.length; innerIndex++) {
+        if (prize > winnerPrizeRates[winnerPrizes[innerIndex]]) {
+          prize -= winnerPrizeRates[winnerPrizes[innerIndex]];
+          winnerPrizeRates[winnerPrizes[innerIndex]]++;
+        }
+      }
+    }
   }
 }

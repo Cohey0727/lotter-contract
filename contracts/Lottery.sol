@@ -37,7 +37,7 @@ contract Lottery {
   mapping(string => uint256) public winnerPrizeRates;
   string[] public winnerPrizes;
 
-  address[] public tickets;
+  address[] public ticketHolders;
   mapping(address => uint256[]) public ticketsByAddress;
 
   constructor(
@@ -71,6 +71,18 @@ contract Lottery {
     _;
   }
 
+  function getDonationAddresses() public view returns (address[] memory) {
+    return donationAddresses;
+  }
+
+  function getTicketHolders() public view returns (address[] memory) {
+    return ticketHolders;
+  }
+
+  function getTicketsByAddress(address user) public view returns (uint256[] memory) {
+    return ticketsByAddress[user];
+  }
+
   function getDonationRates() public view returns (address[] memory, uint256[] memory) {
     uint256[] memory rates = new uint256[](donationAddresses.length);
     for (uint256 i = 0; i < donationAddresses.length; i++) {
@@ -85,10 +97,6 @@ contract Lottery {
       rates[i] = winnerPrizeRates[winnerPrizes[i]];
     }
     return (winnerPrizes, rates);
-  }
-
-  function getTicketsByAddress(address user) public view returns (uint256[] memory) {
-    return ticketsByAddress[user];
   }
 
   function addDonation(address to, uint256 rate) public onlyInitial {
@@ -128,32 +136,35 @@ contract Lottery {
 
   function buyTicket() public payable onlyActive {
     require(msg.value == unitPrice);
-    uint256 ticketId = tickets.length + 1;
-    tickets.push(msg.sender);
+    uint256 ticketId = ticketHolders.length + 1;
+    ticketHolders.push(msg.sender);
     ticketsByAddress[msg.sender].push(ticketId);
   }
 
+  function totalRate() public view returns (uint256) {
+    uint256 _totalRate = 0;
+    for (uint256 i = 0; i < donationAddresses.length; i++) {
+      _totalRate += donationRates[donationAddresses[i]];
+    }
+    for (uint256 i = 0; i < winnerPrizes.length; i++) {
+      _totalRate += winnerPrizeRates[winnerPrizes[i]];
+    }
+    return _totalRate;
+  }
+
+  function random() private view returns (uint256) {
+    bytes memory seed = abi.encodePacked(block.difficulty, block.timestamp, ticketHolders);
+    return uint256(keccak256(seed));
+  }
+
   function distributePrizes() public onlyFinished onlyManager {
-    uint256 totalDonations = 0;
-    for (uint256 index = 0; index < donationAddresses.length; index++) {
-      totalDonations += donationRates[donationAddresses[index]];
-    }
-    uint256 totalPrizes = 0;
-    for (uint256 index = 0; index < winnerPrizes.length; index++) {
-      totalPrizes += winnerPrizeRates[winnerPrizes[index]];
-    }
-    uint256 totalPrize = totalDonations * totalPrizes;
-    uint256 prizePerTicket = totalPrize / tickets.length;
-    for (uint256 index = 0; index < tickets.length; index++) {
-      uint256 ticketId = ticketsByAddress[tickets[index]].length + 1;
-      ticketsByAddress[tickets[index]].push(ticketId);
-      uint256 prize = prizePerTicket;
-      for (uint256 innerIndex = 0; innerIndex < winnerPrizes.length; innerIndex++) {
-        if (prize > winnerPrizeRates[winnerPrizes[innerIndex]]) {
-          prize -= winnerPrizeRates[winnerPrizes[innerIndex]];
-          winnerPrizeRates[winnerPrizes[innerIndex]]++;
-        }
-      }
+    uint256 _totalRate = totalRate();
+    uint256 totalBalance = address(this).balance;
+    for (uint256 i = 0; i < donationAddresses.length; i++) {
+      address donationAddress = donationAddresses[i];
+      uint256 prizeRate = donationRates[donationAddress];
+      uint256 prizeAmount = (totalBalance * prizeRate) / _totalRate;
+      payable(donationAddress).transfer(prizeAmount);
     }
   }
 }

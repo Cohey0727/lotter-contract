@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "clean": "rm -rf ./dist",
-    "test": "yarn clean && tsc && mocha dist/tests/*.js",
+    "test": "yarn clean && tsc && mocha --timeout 10000 dist/tests/*.js",
     "deploy": "yarn clean && tsc && node --require dotenv/config dist/deploy.js"
   },
   "dependencies": {

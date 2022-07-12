@@ -138,4 +138,41 @@ describe("Lottery", () => {
     const res = await lottery.methods.getTicketsByAddress(buyerAccount).call({ from: manager });
     assert.deepEqual(res, ["1"]);
   });
+
+  it("distribute prizes", async () => {
+    const { lotteryFactory, accounts, manager } = data;
+    const title = "Hello";
+    const unitPrice = 1;
+    const donationAccount1 = accounts[1];
+    const donationAccount2 = accounts[2];
+    const buyerAccount = accounts[3];
+    const ticketCount = 20;
+    const initialBalance1 = await web3.eth.getBalance(donationAccount1);
+    const initialBalance2 = await web3.eth.getBalance(donationAccount2);
+
+    await lotteryFactory.methods.createLottery(title, sampleImageUrl, unitPrice).send({ from: manager, gas });
+    const lotteryAddresses = await lotteryFactory.methods.getLotteries().call({ from: manager });
+    const lotteryAddress = lotteryAddresses[0];
+    const lottery = new web3.eth.Contract(Lottery.abi, lotteryAddress);
+    await lottery.methods.addDonation(donationAccount1, 1).send({ from: manager });
+    await lottery.methods.addDonation(donationAccount2, 3).send({ from: manager });
+
+    await lottery.methods.activation().send({ from: manager, gas });
+
+    // 100回購入することでdonationAccount1, donationAccount2に1:3で賞金が分配される
+    for await (const _ of Array(ticketCount).fill(0)) {
+      await lottery.methods.buyTicket().send({ from: buyerAccount, value: unitPrice, gas });
+    }
+
+    await lottery.methods.finish().send({ from: manager, gas });
+    await lottery.methods.distributePrizes().send({ from: manager, gas });
+
+    const afterBalance1 = await web3.eth.getBalance(donationAccount1);
+    const afterBalance2 = await web3.eth.getBalance(donationAccount2);
+
+    assert.equal(
+      BigInt(afterBalance1) + BigInt(afterBalance2) - (BigInt(initialBalance1) + BigInt(initialBalance2)),
+      BigInt(ticketCount * unitPrice)
+    );
+  });
 });

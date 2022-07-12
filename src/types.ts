@@ -1,6 +1,6 @@
-import { AbiItem } from 'web3-utils';
+import { AbiItem } from "web3-utils";
 
-export interface Lottery {
+export interface CompliedContract {
   abi: AbiItem[];
   devdoc: Doc;
   evm: Evm;
@@ -93,12 +93,12 @@ export interface PostClass {
 }
 
 export enum ASTNodeType {
-  YulAssignment = 'YulAssignment',
-  YulBlock = 'YulBlock',
-  YulExpressionStatement = 'YulExpressionStatement',
-  YulForLoop = 'YulForLoop',
-  YulIf = 'YulIf',
-  YulVariableDeclaration = 'YulVariableDeclaration',
+  YulAssignment = "YulAssignment",
+  YulBlock = "YulBlock",
+  YulExpressionStatement = "YulExpressionStatement",
+  YulForLoop = "YulForLoop",
+  YulIf = "YulIf",
+  YulVariableDeclaration = "YulVariableDeclaration",
 }
 
 export interface PostStatement {
@@ -142,18 +142,18 @@ export interface Parameter {
 }
 
 export enum ParameterNodeType {
-  YulIdentifier = 'YulIdentifier',
-  YulTypedName = 'YulTypedName',
+  YulIdentifier = "YulIdentifier",
+  YulTypedName = "YulTypedName",
 }
 
 export enum ExpressionNodeType {
-  YulFunctionCall = 'YulFunctionCall',
-  YulIdentifier = 'YulIdentifier',
-  YulLiteral = 'YulLiteral',
+  YulFunctionCall = "YulFunctionCall",
+  YulIdentifier = "YulIdentifier",
+  YulLiteral = "YulLiteral",
 }
 
 export enum Kind {
-  Number = 'number',
+  Number = "number",
 }
 
 export interface ExpressionElement {
@@ -212,7 +212,7 @@ export interface PurpleValue {
 }
 
 export enum PurpleNodeType {
-  YulFunctionDefinition = 'YulFunctionDefinition',
+  YulFunctionDefinition = "YulFunctionDefinition",
 }
 
 export interface DeployedBytecode {
@@ -280,13 +280,13 @@ export interface Creation {
 }
 
 export interface MethodIdentifiers {
-  'message()': string;
-  'setMessage(string)': string;
+  "message()": string;
+  "setMessage(string)": string;
 }
 
 export interface LegacyAssembly {
-  '.code': Code[];
-  '.data': Data;
+  ".code": Code[];
+  ".data": Data;
 }
 
 export interface Code {
@@ -298,12 +298,12 @@ export interface Code {
 }
 
 export interface Data {
-  '0': The0;
+  "0": The0;
 }
 
 export interface The0 {
-  '.auxdata': string;
-  '.code': Code[];
+  ".auxdata": string;
+  ".code": Code[];
 }
 
 export interface Ewasm {

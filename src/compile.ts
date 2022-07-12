@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
 import solc from "solc";
-import { Lottery } from "./types";
+import { CompliedContract } from "./types";
 
 // const buildPath = path.resolve(__dirname, "build");
 // fs.removeSync(buildPath);
@@ -37,5 +37,7 @@ const compilerInput = {
   },
 };
 
+type CompileResult = { Lottery: CompliedContract; LotteryFactory: CompliedContract };
+
 const compiled = JSON.parse(solc.compile(JSON.stringify(compilerInput)));
-export default compiled.contracts.Lottery.LotteryFactory as Lottery;
+export default compiled.contracts.Lottery as CompileResult;

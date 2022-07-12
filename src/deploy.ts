@@ -1,7 +1,8 @@
 import HDWalletProvider from "@truffle/hdwallet-provider";
 import Web3 from "web3";
-import Lottery from "./compile";
+import compileResult from "./compile";
 
+const { Lottery } = compileResult;
 const { evm, abi } = Lottery;
 const { bytecode } = evm;
 

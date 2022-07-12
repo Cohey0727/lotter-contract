@@ -1,133 +1,100 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-contract LotteryManager {
-    address[] public deployedLotteries;
+contract LotteryFactory {
+  address[] public lotteries;
 
-    function createLottery(uint256 minimum) public {
-        Lottery newLottery = new Lottery(minimum, msg.sender);
-        deployedLotteries.push(address(newLottery));
-    }
+  function createLottery(string memory title, uint256 unitPrice) public {
+    Lottery newLottery = new Lottery(msg.sender, title, unitPrice);
+    lotteries.push(address(newLottery));
+  }
 
-    function getDeployedLottery() public view returns (address[] memory) {
-        return deployedLotteries;
-    }
+  function getDeployedLottery() public view returns (address[] memory) {
+    return lotteries;
+  }
 }
 
-struct Request {
-    string id;
-    uint256 value;
-    string description;
-    address recipient;
-    bool completed;
-    uint256 approvalCount;
-    mapping(address => bool) approvals;
-    bool initialized;
-}
-
-struct Contribution {
-    uint256 value;
-    uint256 timestamp;
+enum LotteryStatus {
+  Initial,
+  Active,
+  Finished
 }
 
 contract Lottery {
-    address public factory;
-    address public manager;
-    uint256 public minimumContribution;
-    mapping(address => Contribution) public contributions;
-    uint256 contributionCount;
-    mapping(string => Request) public requests;
+  address public factory;
+  address public manager;
+  string public title;
+  uint256 public unitPrice;
+  LotteryStatus public status;
+  mapping(address => uint256) public fixedShares;
+  mapping(string => uint256) public prizeShares;
 
-    modifier onlyManager() {
-        require(manager == msg.sender);
-        _;
+  address[] public tickets;
+  mapping(address => uint256[]) public ticketsByAddress;
+
+  constructor(
+    address creator,
+    string memory _title,
+    uint256 _unitPrice
+  ) {
+    factory = msg.sender;
+    manager = creator;
+    title = _title;
+    unitPrice = _unitPrice;
+  }
+
+  modifier onlyManager() {
+    require(manager == msg.sender);
+    _;
+  }
+
+  modifier onlyActive() {
+    require(status == LotteryStatus.Active);
+    _;
+  }
+  modifier onlyInitial() {
+    require(status == LotteryStatus.Initial);
+    _;
+  }
+
+  function addFixedShares(address to, uint256 shareRate) public onlyInitial {
+    fixedShares[to] = shareRate;
+  }
+
+  function removeFixedShares(address to) public onlyInitial {
+    fixedShares[to] = 0;
+  }
+
+  function addPrizeShares(string memory prize, uint256 shareRate) public onlyInitial {
+    prizeShares[prize] = shareRate;
+  }
+
+  function removePrizeShares(string memory prize) public onlyInitial {
+    prizeShares[prize] = 0;
+  }
+
+  function activation() public onlyManager onlyInitial {
+    status = LotteryStatus.Active;
+  }
+
+  function finish() public onlyManager onlyActive {
+    status = LotteryStatus.Finished;
+  }
+
+  function buyTicket() public payable onlyActive {
+    require(msg.value == unitPrice);
+    tickets.push(msg.sender);
+    uint256 ticketId = tickets.length;
+    ticketsByAddress[msg.sender].push(ticketId);
+  }
+
+  function buyTickets(uint256 units) public payable onlyActive {
+    require(msg.value == unitPrice * units);
+    uint256 ticketId = tickets.length;
+    for (uint256 i = 0; i < units; i++) {
+      tickets.push(msg.sender);
+      ticketsByAddress[msg.sender].push(ticketId);
+      ticketId = ticketId + 1;
     }
-
-    modifier onlyContributer() {
-        Contribution memory contribution = contributions[msg.sender];
-        bool isContributer = contribution.value != 0 &&
-            contribution.timestamp != 0;
-        require(isContributer);
-        _;
-    }
-
-    modifier mustBeInitialized(string memory requestId) {
-        Request storage request = requests[requestId];
-        require(request.initialized);
-        _;
-    }
-
-    constructor(uint256 minimum, address creator) {
-        factory = msg.sender;
-        manager = creator;
-        minimumContribution = minimum;
-    }
-
-    function contribute() public payable {
-        require(msg.value >= minimumContribution);
-        contributions[msg.sender] = Contribution({
-            value: msg.value,
-            timestamp: block.timestamp
-        });
-        contributionCount++;
-    }
-
-    function createRequest(
-        string memory requestId,
-        string memory description,
-        uint256 value,
-        address recipient
-    ) public onlyManager {
-        Request storage newRequest = requests[requestId];
-        // must be unique requestId.
-        require(!newRequest.initialized);
-
-        newRequest.id = requestId;
-        newRequest.description = description;
-        newRequest.value = value;
-        newRequest.recipient = recipient;
-        newRequest.completed = false;
-        newRequest.initialized = true;
-        newRequest.approvalCount = 0;
-    }
-
-    function approvalRequest(string memory requestId)
-        public
-        onlyContributer
-        mustBeInitialized(requestId)
-    {
-        Request storage request = requests[requestId];
-
-        // must be not approved
-        require(!request.approvals[msg.sender]);
-
-        request.approvals[msg.sender] = true;
-        request.approvalCount++;
-    }
-
-    function disapprovalRequest(string memory requestId)
-        public
-        onlyContributer
-        mustBeInitialized(requestId)
-    {
-        Request storage request = requests[requestId];
-
-        // must be approved
-        require(request.approvals[msg.sender]);
-
-        request.approvals[msg.sender] = false;
-        request.approvalCount--;
-    }
-
-    function finalizeRequest(string memory requestId) public onlyManager {
-        Request storage request = requests[requestId];
-        // must be initialized
-        require(request.initialized);
-        // must be not completed
-        require(!request.completed);
-
-        // 50% of contributers must approve the request
-        require(contributionCount / 2 == request.approvalCount);
-        request.completed = true;
-    }
+  }
 }

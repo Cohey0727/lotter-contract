@@ -6,11 +6,12 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "test": "tsc && mocha dist/tests/*.js",
-    "deploy": "tsc && node --require dotenv/config dist/deploy.js"
+    "clean": "rm -rf ./dist",
+    "test": "yarn clean && tsc && mocha dist/tests/*.js",
+    "deploy": "yarn clean && tsc && node --require dotenv/config dist/deploy.js"
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^2.0.10",
+    "@truffle/hdwallet-provider": "^2.0.6",
     "dotenv": "^16.0.1",
     "ganache-cli": "^6.12.2",
     "mocha": "^10.0.0",
@@ -18,8 +19,8 @@
     "solc": "^0.8.15",
     "ts-node": "^10.8.2",
     "typescript": "^4.7.4",
-    "web3": "^1.7.4",
-    "web3-utils": "^1.7.4"
+    "web3": "^1.7.3",
+    "web3-utils": "^1.7.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",

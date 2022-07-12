@@ -38,4 +38,4 @@ const compilerInput = {
 };
 
 const compiled = JSON.parse(solc.compile(JSON.stringify(compilerInput)));
-export default compiled.contracts.Lottery.Lottery as Lottery;
+export default compiled.contracts.Lottery.LotteryFactory as Lottery;

@@ -166,5 +166,17 @@ contract Lottery {
       uint256 prizeAmount = (totalBalance * prizeRate) / _totalRate;
       payable(donationAddress).transfer(prizeAmount);
     }
+
+    for (uint256 i = 0; i < winnerPrizes.length; i++) {
+      string memory winnerPrize = winnerPrizes[i];
+      uint256 prizeRate = winnerPrizeRates[winnerPrize];
+      uint256 prizeAmount = (totalBalance * prizeRate) / _totalRate;
+      uint256 index = random() % ticketHolders.length;
+      payable(ticketHolders[index]).transfer(prizeAmount);
+    }
+    if (address(this).balance > 0) {
+      // 端数はmanagerに戻す。
+      payable(manager).transfer(address(this).balance);
+    }
   }
 }

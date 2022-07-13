@@ -3,14 +3,19 @@ pragma solidity ^0.8.15;
 
 contract LotteryFactory {
   address[] public lotteries;
+  mapping(address => string) public lotteryNames;
+  mapping(address => string) public lotteryImages;
 
   function createLottery(
-    string memory title,
+    string memory name,
     string memory imageUrl,
     uint256 unitPrice
   ) public {
-    Lottery newLottery = new Lottery(msg.sender, title, imageUrl, unitPrice);
-    lotteries.push(address(newLottery));
+    Lottery newLottery = new Lottery(msg.sender, name, imageUrl, unitPrice);
+    address lotteryAddress = address(newLottery);
+    lotteries.push(lotteryAddress);
+    lotteryNames[lotteryAddress] = name;
+    lotteryNames[lotteryAddress] = imageUrl;
   }
 
   function getLotteries() public view returns (address[] memory) {
@@ -27,7 +32,7 @@ enum LotteryStatus {
 contract Lottery {
   address public factory;
   address public manager;
-  string public title;
+  string public name;
   string public imageUrl;
   uint256 public unitPrice;
   LotteryStatus public status;
@@ -42,13 +47,13 @@ contract Lottery {
 
   constructor(
     address creator,
-    string memory _title,
+    string memory _name,
     string memory _imageUrl,
     uint256 _unitPrice
   ) {
     factory = msg.sender;
     manager = creator;
-    title = _title;
+    name = _name;
     imageUrl = _imageUrl;
     unitPrice = _unitPrice;
   }
@@ -117,9 +122,9 @@ contract Lottery {
     donationAddresses = newDonationAddresses;
   }
 
-  function addWinnerPrize(string memory prizeTitle, uint256 rate) public onlyInitial {
-    winnerPrizeRates[prizeTitle] = rate;
-    winnerPrizes.push(prizeTitle);
+  function addWinnerPrize(string memory prizeName, uint256 rate) public onlyInitial {
+    winnerPrizeRates[prizeName] = rate;
+    winnerPrizes.push(prizeName);
   }
 
   function removeWinnerPrize(string memory prize) public onlyInitial {
